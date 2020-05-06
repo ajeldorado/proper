@@ -10,7 +10,7 @@ from setuptools import find_packages, setup, Extension
 copy_args = sys.argv[1:]
 
 if os.name == 'posix':
-    # copy_args.append('--user')
+    copy_args.append('--user')
     
     if  platform.system() == 'Linux':
         extra_compile_args = ['-fPIC']
@@ -44,7 +44,8 @@ setup(
       },
 
       script_args = copy_args,
-
+      url = 'https://github.com/selimgr/proper',   # Provide either the link to your github or to your website
+      download_url = 'https://github.com/selimgr/proper/archive/v_01.tar.gz',
       author="Navtej Saini, Nikta Amiri, Luis Marchen",
       description="An optical wavefront propagation utility",
       license = "BSD",
