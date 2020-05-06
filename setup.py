@@ -10,7 +10,7 @@ from setuptools import find_packages, setup, Extension
 copy_args = sys.argv[1:]
 
 if os.name == 'posix':
-    copy_args.append('--user')
+    #copy_args.append('--user')
     
     if  platform.system() == 'Linux':
         extra_compile_args = ['-fPIC']
