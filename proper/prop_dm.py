@@ -190,7 +190,10 @@ def prop_dm(wf, dm_z0, dm_xc, dm_yc, spacing = 0., **kwargs):
     x = np.arange(nx_dm, dtype = np.int16) * int(inf_mag) + int(xoff_grid)
     y = np.arange(ny_dm, dtype = np.int16) * int(inf_mag) + int(yoff_grid)
     dm_grid[np.tile(np.vstack(y), (nx_dm,)), np.tile(x, (ny_dm,1))] = dm_z_commanded
-    dm_grid = ss.fftconvolve(dm_grid, inf, mode = 'same')
+
+    newinf = np.zeros( inf.shape, dtype=np.float64 )  # fix for Python >=3.8, force inf to be numpy array
+    newinf[:,:] = inf
+    dm_grid = ss.fftconvolve(dm_grid, newinf, mode = 'same')
 
     # 3D rotate DM grid and project orthogonally onto wavefront
     xdim = int(np.round(np.sqrt(2) * nx_grid * dx_inf / dx_surf)) # grid dimensions (pix) projected onto wavefront

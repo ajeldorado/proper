@@ -6,6 +6,8 @@
 /* based on the traditional separable derivation described in "Two-Dimensional Cubic Convolution" by
  * Reichenbach & Geng, IEEE Transactions on Image Processing, v.12, 857 (2003).  This code is intended
  * to provide the same results as the CUBIC=-0.5 option to IDL's INTERPOLATE function.  */
+
+/* Bug fix by John Krist, 3 Sept 2020: fixed bounding check */
  
 /*--------------------------------------------------------------------------------------*/
 double roundval( double x )
@@ -18,7 +20,7 @@ double roundval( double x )
 
 /*--------------------------------------------------------------------------------------*/
 //void  cubic_conv_c( int argc, void *argv[] )
-void cubic_conv_c(const void * image_input, int size_in_x, int size_in_y, void * image_output, int size_out_x, int size_out_y, void * x_input, void * y_input)
+void cubic_conv_c(const void * image_input, int size_in_x, int size_in_y, void * image_output, int size_out_x, int size_out_y, void * x_input, void * y_input, int num_threads )
 {
 	double  a, k, d, sum, xc, yc, kx0[5], kx1[5], ky0[5], ky1[5];
 	int	i, j, xoff, yoff, x_pix, x_out, y_pix, y_out;
@@ -28,6 +30,7 @@ void cubic_conv_c(const void * image_input, int size_in_x, int size_in_y, void *
 	double * image_out = (double *)image_output;
 	double * x_in = (double *)x_input;	/* vector of X coordinates in input image */
 	double * y_in = (double *)y_input;	/* vector of Y coordinates in input image */
+
 	a = -0.5;
 
 	for ( y_out = 0; y_out < size_out_y; ++y_out )
@@ -36,13 +39,18 @@ void cubic_conv_c(const void * image_input, int size_in_x, int size_in_y, void *
 		{
 			ii = y_out * (size_t)size_out_x + x_out;
 
-	        	if ( y_in[ii] < 0 || y_in[ii] >= size_in_y )
-	           		continue;
-		    	if ( x_in[ii] < 0 || x_in[ii] >= size_in_x )
-		       		continue;
+			y_pix = roundval( y_in[ii] );
 
-			y_pix = roundval( y_in[y_out] );
-			yc = roundval(y_in[y_out]) - y_in[y_out];
+                        if ( y_pix < 2 )
+                        {
+                                y_pix = 2;
+                        }
+                        else if ( y_pix > size_in_y-2 )
+                        {
+                                y_pix = size_in_y - 2;
+                        }
+
+			yc = roundval(y_in[ii]) - y_in[ii];
 
 			for ( j = -2; j <= 2; ++j )
 			{
@@ -64,8 +72,18 @@ void cubic_conv_c(const void * image_input, int size_in_x, int size_in_y, void *
 				}
 			}
 			 
-		    	x_pix = roundval( x_in[x_out] );
-		    	xc = roundval(x_in[x_out]) - x_in[x_out];
+		    	x_pix = roundval( x_in[ii] );
+
+                        if ( x_pix < 2 )
+                        {
+                                x_pix = 2;
+                        }
+                        else if ( x_pix > size_in_x-2 )
+                        {
+                                x_pix = size_in_x - 2;
+                        }
+
+		    	xc = roundval(x_in[ii]) - x_in[ii];
 
 		    	for ( j = -2; j <= 2; ++j )
 		    	{

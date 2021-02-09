@@ -9,6 +9,8 @@
  * Reichenbach & Geng, IEEE Transactions on Image Processing, v.12, 857 (2003).  This code is intended
  * to provide the same results as the CUBIC=-0.5 option to IDL's INTERPOLATE function.  */
 
+/* Bug fix by John Krist, 3 Sept 2020: fixed bounding check */
+
 static const double a = -0.5;
 
 
@@ -22,7 +24,7 @@ struct parstruct {
 
 struct threadstruct {
 	struct parstruct *pars;
-	int	thread, start_row, end_row;
+	long	thread, start_row, end_row;
 };
  
 /*--------------------------------------------------------------------------------------*/
@@ -42,7 +44,7 @@ static void *interp_thread( void *tpar )
 
 	double	x, y, mag;
 	double  k, d, sum, xc, yc, ky0[5], ky1[5];
-	int	i, j, ix, xoff, yoff, x_pix, x_out, y_pix, y_out;
+	long	i, j, ix, xoff, yoff, x_pix, x_out, y_pix, y_out;
 	size_t	ii;
 
 	thread = tpar;
@@ -55,6 +57,16 @@ static void *interp_thread( void *tpar )
 			ii = y_out * (size_t)pars->x_size_out + x_out;
 
 			y_pix = roundval( pars->y_in[ii] );
+
+			if ( y_pix < 2 )
+			{
+				y_pix = 2;
+			}
+			else if ( y_pix > pars->y_size_in-2 )
+			{
+				y_pix = pars->y_size_in - 2;
+			}
+
 			yc = roundval(pars->y_in[ii]) - pars->y_in[ii];
 
 			for ( j = -2; j <= 2; ++j )
@@ -78,6 +90,15 @@ static void *interp_thread( void *tpar )
 			}
 
 			x_pix = roundval( pars->x_in[ii] );
+
+			if ( x_pix < 2 )
+			{
+				x_pix = 2;
+			}
+			else if ( x_pix > pars->x_size_in-2 )
+			{
+				x_pix = pars->x_size_in - 2;
+			}
 
 			sum = 0;
 			for ( j = 0; j <= 4; ++j )
@@ -110,11 +131,11 @@ int cubic_conv_c(const void * image_input, int x_size_in, int y_size_in, void * 
 {
 	double	x, y, mag;
 	double  k, d, sum, xc, yc, *kx0, *kx1;
-	int	i, j, ix, xoff, yoff, x_pix, x_out, y_pix, y_out;
+	long	i, j, ix, xoff, yoff, x_pix, x_out, y_pix, y_out;
 	struct threadstruct *threadpars;
 	struct parstruct pars;
         pthread_t *threads;
-        int     dy, ithread;
+        long     dy, ithread;
         void    *retval;
 
 	const double *image_in = (double *)image_input;
