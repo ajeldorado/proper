@@ -5,7 +5,8 @@
 #   PROPER developed at Jet Propulsion Laboratory/California Inst. Technology
 #   Original IDL version by John Krist
 #   Python translation by Navtej Saini, with Luis Marchen and Nikta Amiri
-
+#   Modified 13 Feb 2020 - J. Krist - If the map was rotated, it was not
+#   shifted back to the origin of the wavefront array (Python indentation error)
 
 
 import proper
@@ -115,7 +116,7 @@ def prop_errormap(wf, filename, xshift = 0., yshift = 0., **kwargs):
             dmap = proper.prop_rotate(dmap, kwargs["ROTATEMAP"], CUBIC=-0.5, MISSING=0.0)
         if "MAGNIFY" in kwargs:
             dmap = proper.prop_magnify(dmap, kwargs["MAGNIFY"], dmap.shape[0])
-            dmap = proper.prop_shift_center(dmap)
+        dmap = proper.prop_shift_center(dmap)
             
     if proper.switch_set("MICRONS",**kwargs):
         dmap *= 1.e-6

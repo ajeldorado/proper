@@ -10,6 +10,7 @@
 
 import astropy.io.fits as pyfits
 import proper
+import numpy as np
 
 def prop_fits_read(fname, header = False):
     """Function to read an input FITS image.
@@ -32,6 +33,8 @@ def prop_fits_read(fname, header = False):
         imgarr, imgheader = pyfits.getdata(fname, header=True, ignore_missing_end=True)
     except IOError:
         raise IOError("Unable to read FITS image %s. Stopping" %(fname))
+
+    imgarr = imgarr.astype(np.float64)
 
     if header:
         return (imgarr, imgheader)
